@@ -1,0 +1,3 @@
+TASK:
+The task  is to implement a simple tool to create flight plans for UAV-LiDAR surveys. The tool should take an area-of-interest polygon and basic flight mission parameters (flying altitude. flight speed, scanner FOV, scan rate, main flight direction, mission type...) as input and should return a waypoint kml file (readable for DJI pilot app) as output. The tool should be available as a  python module including an argument parser for execution from a command shell.
+In addition, implementation as a a simple QGIS plugin is desired.
