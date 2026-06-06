@@ -1,4 +1,4 @@
-def lines_to_waypoints(lines, altitude):
+def lines_to_waypoints(lines, altitude, speed):
     waypoints = []
     reverse = False
 
@@ -13,7 +13,8 @@ def lines_to_waypoints(lines, altitude):
             waypoints.append({
                 "lat": y,
                 "lon": x,
-                "alt": altitude
+                "alt": altitude,
+                "speed": speed
             })
 
         reverse *= -1 # reverse = not reverse

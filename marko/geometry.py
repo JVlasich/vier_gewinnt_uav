@@ -16,7 +16,7 @@ def extract_lines(geom):
     # Point oder anderes ignorieren
     return []
 
-def generate_flight_lines(polygon, altitude, fov, direction, overlap=0.7):
+def generate_flight_lines(polygon, altitude, fov, direction, overlap=0.7, scan_rate=10):
     swath_width = 2 * altitude * math.tan(math.radians(fov / 2))
     spacing = swath_width * (1 - overlap)
     rotated = rotate(polygon, direction, origin='centroid')
@@ -35,5 +35,5 @@ def generate_flight_lines(polygon, altitude, fov, direction, overlap=0.7):
         y += spacing
     
     
-    return lines
+    return lines, scan_rate
 
