@@ -1,0 +1,16 @@
+polygon = [] 
+altidue = 1
+speed   =  1
+fov = 1
+direction = 1
+
+def generate_flight_lines(
+    polygon,
+    altitude,
+    speed,
+    fov,
+    direction
+):
+    pass
+
+
