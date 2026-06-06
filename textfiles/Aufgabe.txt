@@ -7,3 +7,19 @@ mission type...) as input and should return a waypoint kml file
 The tool should be available as a  python module including an argument parser for 
 execution from a command shell.
 In addition, implementation as a a simple QGIS plugin is desired.
+
+TODO:
+- Was ist Mathematik, how do they relate to each other:
+    - flying altitude
+    - flight speed
+    - scanner FOV
+    - scan rate
+    - main flight direction
+- Was sind mission types
+- Was ist KML / Waypoints
+- Was ist die DJI Pilot app
+
+GOODIES:
+- Wie funktioniert ein QGIS plugin
+    - Was sollte es überhaupt können
+- AOI maker wie in fernerkundung
