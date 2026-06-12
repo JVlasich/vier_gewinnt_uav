@@ -6,12 +6,13 @@ class MissionParams:
     """Mission Parameters passed to the geometry functions"""
     altitude: float         # m
     velocity: float         # m/s
-    fov: float              # ° or rad?
-    scan_rate: float        # hz
-    flight_azimuth: float   # ° should this be infered? 
-    overlap: float          # m 
-    lead_in: float          # m  
-    epsg: int
+    fov: float              # ° full angle, converted to rad in metrics
+    flight_azimuth: float   # ° clockwise from north
+    overlap: float          # fraction 0..1
+    lead_in: float          # m
+    epsg: int | None = None # None -> pick UTM zone automatically
+    prf: float | None = None        # pulses/s, needed for point density
+    mission_type: str = "single_grid"
 
 
 @dataclass
@@ -36,7 +37,6 @@ class Metrics:
     line_spacing: float
     num_lines: int
 
-    along_track_spacing: float | None
     point_density: float | None
     total_length: float
     est_duration: float
@@ -49,6 +49,11 @@ class FlightPlan:
     lines: list[FlightLine]
     crs_epsg: int
     metrics: Metrics
-    def waypoints(self) -> list[Waypoint]: # type: ignore
-        pass
+
+    def waypoints(self) -> list[Waypoint]:
+        out = []
+        for line in self.lines:
+            out.append(line.start)
+            out.append(line.end)
+        return out
 
