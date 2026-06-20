@@ -23,6 +23,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--mission", default="single_grid", choices=["single_grid", "double_grid"], help="mission type",)
     p.add_argument("--prf", type=float, default=None, help="pulse repetition frequency [Hz], enables point density estimate",)
     p.add_argument("--epsg", type=int, default=None, help="projected EPSG code (default: auto UTM zone)",)
+    p.add_argument("--restricted", action="store_true", help="keep transits inside the AOI (no-fly outside)")
     return p
 
 
@@ -39,6 +40,7 @@ def main(argv=None) -> None:
         epsg=args.epsg,
         prf=args.prf,
         mission_type=args.mission,
+        restricted=args.restricted,
     )
 
     polygon = read_polygon(args.input)

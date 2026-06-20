@@ -1,5 +1,7 @@
 from .planner_types import MissionParams, FlightPlan, FlightLine, Waypoint
 from .crs import pick_utm_epsg, to_projected, to_wgs84
+from .geometry import route_transits # rally bad with holes
+# from .routing import route_transits # work in progress
 from .metrics import validate, swath_width, line_spacing, compute_metrics
 from .missions import get_mission_function
 
@@ -18,7 +20,8 @@ def plan_mission(polygon_wgs84, params: MissionParams) -> FlightPlan:
     if not lines_proj:
         raise ValueError("no flight lines generated; AOI smaller than line spacing?")
 
-    metrics = compute_metrics(params, lines_proj)
+    transits_proj = route_transits(lines_proj, polygon_proj, params.restricted)
+    metrics = compute_metrics(params, lines_proj, transits_proj)
 
     flight_lines = []
     for i, line_proj in enumerate(lines_proj):
@@ -29,5 +32,12 @@ def plan_mission(polygon_wgs84, params: MissionParams) -> FlightPlan:
             start=Waypoint(lon0, lat0, params.altitude, velocity=params.velocity),
             end=Waypoint(lon1, lat1, params.altitude),
         ))
+
+    # transit waypoints between line i and i+1; endpoints already covered
+    for line, transit_proj in zip(flight_lines, transits_proj):
+        transit = to_wgs84(transit_proj, epsg)
+        line.transit_to_next = [
+            Waypoint(lon, lat, params.altitude) for lon, lat in transit.coords[1:-1]
+        ]
 
     return FlightPlan(lines=flight_lines, crs_epsg=epsg, metrics=metrics)

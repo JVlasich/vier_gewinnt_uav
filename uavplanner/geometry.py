@@ -1,6 +1,7 @@
 # geometry.py
 from shapely.affinity import rotate
-from shapely.geometry import LineString, Polygon
+from shapely.geometry import LineString, Point, Polygon
+from shapely.ops import substring
 
 
 def generate_flight_lines(
@@ -66,3 +67,42 @@ def _order_segments(segments) -> list[LineString]:
             row = [LineString(seg.coords[::-1]) for seg in reversed(row)]
         ordered.extend(row)
     return ordered
+
+
+def route_transits(lines, polygon, restricted) -> list[LineString]:
+    """One transit leg per consecutive line pair, in the projected CRS.
+    Straight hop unless restricted and the hop leaves the polygon,
+    then walk along the boundary instead."""
+    safe = polygon.buffer(0.5)
+    ring = polygon.exterior
+    transits = []
+    for prev, nxt in zip(lines, lines[1:]):
+        hop = LineString([prev.coords[-1], nxt.coords[0]])
+        if restricted and not hop.covered_by(safe):
+            hop = _boundary_path(ring, hop.coords[0], hop.coords[-1])
+            if not hop.covered_by(safe):
+                raise ValueError(
+                    "restricted transit still leaves the AOI; the boundary "
+                    "walk cannot route around holes")
+        transits.append(hop)
+    return transits
+
+
+def _boundary_path(ring, p0, p1) -> LineString:
+    """Path from p0 to p1 along the ring, shorter of the two directions."""
+    d0 = ring.project(Point(p0))
+    d1 = ring.project(Point(p1))
+    direct = abs(d1 - d0)
+    if direct <= ring.length - direct:
+        path = substring(ring, d0, d1)
+    else:
+        # the shorter way goes through the ring closure point
+        if d0 < d1:
+            a = substring(ring, d0, 0)
+            b = substring(ring, ring.length, d1)
+        else:
+            a = substring(ring, d0, ring.length)
+            b = substring(ring, 0, d1)
+        path = LineString(list(a.coords) + list(b.coords)[1:])
+    # keep the exact endpoints, projection may have snapped them
+    return LineString([p0, *path.coords[1:-1], p1])

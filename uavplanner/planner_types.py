@@ -13,6 +13,7 @@ class MissionParams:
     epsg: int | None = None # None -> pick UTM zone automatically
     prf: float | None = None        # pulses/s, needed for point density
     mission_type: str = "single_grid"
+    restricted: bool = False        # route transits inside the AOI (no-fly outside)
 
 
 @dataclass
@@ -27,6 +28,7 @@ class Waypoint:
 class FlightLine:
     """A single flight line"""
     index: int; start: Waypoint; end: Waypoint
+    transit_to_next: list[Waypoint] = field(default_factory=list)
 
 
 @dataclass
@@ -55,5 +57,6 @@ class FlightPlan:
         for line in self.lines:
             out.append(line.start)
             out.append(line.end)
+            out.extend(line.transit_to_next)
         return out
 

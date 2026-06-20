@@ -28,6 +28,8 @@ def validate(params: MissionParams) -> list[str]:
         raise ValueError(f"overlap must be in [0, 1), got {params.overlap}")
     if params.lead_in < 0:
         raise ValueError(f"lead_in must be >= 0, got {params.lead_in}")
+    if params.restricted and params.lead_in > 0:
+        raise ValueError("lead_in extends lines beyond the AOI, not allowed with restricted")
 
     warnings = []
     if params.altitude > 120:
@@ -37,19 +39,15 @@ def validate(params: MissionParams) -> list[str]:
     return warnings
 
 
-def compute_metrics(params: MissionParams, lines) -> Metrics:
-    """lines are projected (metric) shapely LineStrings"""
+def compute_metrics(params: MissionParams, lines, transits) -> Metrics:
+    """lines and transits are projected (metric) shapely LineStrings"""
     swath = swath_width(params.altitude, params.fov)
     spacing = line_spacing(swath, params.overlap)
     density = None
     if params.prf is not None:
         density = point_density(params.prf, swath, params.velocity, params.overlap)
 
-    total = sum(line.length for line in lines)
-    for prev, nxt in zip(lines, lines[1:]):
-        x0, y0 = prev.coords[-1]
-        x1, y1 = nxt.coords[0]
-        total += math.hypot(x1 - x0, y1 - y0)
+    total = sum(line.length for line in lines) + sum(t.length for t in transits)
 
     return Metrics(
         swath=swath,
