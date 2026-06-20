@@ -7,6 +7,10 @@ from .reader import read_polygon
 from .writer import write_kml
 
 
+def _azimuth(value):
+    return None if value.lower() == "auto" else float(value)
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="uavplanner",
@@ -17,7 +21,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--altitude", type=float, required=True, help="flying altitude [m]")
     p.add_argument("--velocity", type=float, required=True, help="flight speed [m/s]")
     p.add_argument("--fov", type=float, required=True, help="scanner FOV, full angle [deg]")
-    p.add_argument("--azimuth", type=float, default=0.0, help="main flight direction [deg clockwise from north]",)
+    p.add_argument("--azimuth", type=_azimuth, default=None, help="main flight direction [deg clockwise from north], or 'auto' (default) to pick the shortest",)
     p.add_argument("--overlap", type=float, default=0.3, help="swath overlap, fraction 0..1")
     p.add_argument("--lead-in", type=float, default=0.0, help="line extension on both ends [m]")
     p.add_argument("--mission", default="single_grid", choices=["single_grid", "double_grid"], help="mission type",)
@@ -48,6 +52,7 @@ def main(argv=None) -> None:
     m = plan.metrics
 
     print(f"mission type:         {params.mission_type}")
+    print(f"flight azimuth:       {m.azimuth:.0f} deg{' (auto)' if args.azimuth is None else ''}")
     print(f"projected CRS:        EPSG:{plan.crs_epsg}")
     print(f"swath width:          {m.swath:.1f} m")
     print(f"line spacing:         {m.line_spacing:.1f} m")

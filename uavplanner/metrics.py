@@ -40,7 +40,7 @@ def validate(params: MissionParams) -> list[str]:
 
 
 def compute_metrics(params: MissionParams, lines, transits) -> Metrics:
-    """lines and transits are projected (metric) shapely LineStrings"""
+    """lines and transits are projected shapely LineStrings"""
     swath = swath_width(params.altitude, params.fov)
     spacing = line_spacing(swath, params.overlap)
     density = None
@@ -53,6 +53,7 @@ def compute_metrics(params: MissionParams, lines, transits) -> Metrics:
         swath=swath,
         line_spacing=spacing,
         num_lines=len(lines),
+        azimuth=params.flight_azimuth,
         point_density=density,
         total_length=total,
         est_duration=total / params.velocity,

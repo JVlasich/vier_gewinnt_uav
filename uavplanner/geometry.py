@@ -16,19 +16,34 @@ def generate_flight_lines(
     return [rotate(seg, 90 - azimuth_deg, origin=origin) for seg in ordered]
 
 
+def best_azimuth(polygon_proj: Polygon, spacing_m: float, lead_in_m: float = 0.0) -> float:
+    """Azimuth (deg) that gives the shortest path: flight lines plus
+    straight transits"""
+    def cost(az):
+        lines = generate_flight_lines(polygon_proj, spacing_m, az, lead_in_m)
+        if not lines:
+            return float("inf")
+        transits = route_transits(lines, polygon_proj, restricted=False)
+        return sum(line.length for line in lines) + sum(t.length for t in transits)
+
+    # sweep with 10 deg steps
+    coarse = min(range(0, 180, 10), key=cost)
+    # +-10 fine sweep around coarse result
+    fine = float(min(range(coarse - 10, coarse + 11, 2), key=cost))
+    return fine
+
+
 def _rotate(geom, azimuth_deg, origin):
-    """Rotate so the flight direction (azimuth, clockwise from north)
-    lands on the x-axis.
-    Shapely rotates counterclockwise, azimuth is
-    clockwise from north -> -90"""
+    """Rotate so the flight direction lands on the x-axis."""
+    # Shapely rotates counterclockwise, azimuth is clockwise from north -> -90
     return rotate(geom, azimuth_deg - 90, origin=origin)
 
 
 def _slice_bbox(polygon, spacing_m) -> list[LineString]:
-    """Horizontal lines across the bbox, spaced spacing_m apart,
-    first offset by spacing_m/2 so none sits exactly on an edge."""
+    """Horizontal lines across the bbox, spaced spacing_m apart."""
     minx, miny, maxx, maxy = polygon.bounds
     lines = []
+    # first offset by spacing_m/2 -> none sits exactly on the edge.
     y = miny + spacing_m / 2
     while y < maxy:
         lines.append(LineString([(minx - 1, y), (maxx + 1, y)]))
@@ -54,19 +69,70 @@ def _clip_to_polygon(lines, polygon, lead_in_m) -> list[LineString]:
 
 
 def _order_segments(segments) -> list[LineString]:
-    """Bottom row first, alternate direction every row so each line
-    ends near the next one."""
+    """Sweep each connected cell of the AOI completely before moving to
+    the next. Direction alternates every row within a cell."""
+    rows = _group_rows(segments)
+    cells = _build_cells(rows)
+    cells.sort(key=lambda c: (c[0].coords[0][1], c[0].coords[0][0]))
+
+    ordered = []
+    for cell in cells:
+        for i, seg in enumerate(cell):
+            ordered.append(LineString(seg.coords[::-1]) if i % 2 else seg)
+    return ordered
+
+
+def _group_rows(segments) -> list[list[LineString]]:
+    """Segments bucketed by sweep offset, bottom row first, each row
+    sorted along the flight direction."""
     rows: dict[float, list[LineString]] = {}
     for seg in segments:
         rows.setdefault(round(seg.coords[0][1], 6), []).append(seg)
+    return [sorted(rows[y], key=lambda s: s.coords[0][0]) for y in sorted(rows)]
 
-    ordered = []
-    for i, y in enumerate(sorted(rows)):
-        row = sorted(rows[y], key=lambda s: s.coords[0][0])
-        if i % 2:
-            row = [LineString(seg.coords[::-1]) for seg in reversed(row)]
-        ordered.extend(row)
-    return ordered
+
+def _build_cells(rows) -> list[list[LineString]]:
+    """Group segments into cells: walk the rows bottom-to-top, linking each segment to the one below it
+    when their along-line spans overlap. A row that splits into several
+    segments (two arms, or around a hole) starts new cells; several
+    segments merging back start a single one."""
+    finished: list[list[LineString]] = []
+    open_cells: list[list[LineString]] = []
+    open_span: list[tuple[float, float]] = []  # along-line span of each open cell's last segment
+
+    for row in rows:
+        spans = [(s.coords[0][0], s.coords[-1][0]) for s in row]
+        prev_hits = [[] for _ in open_cells]  # cur indices overlapping each open cell
+        cur_hits = [[] for _ in row]          # open cell indices overlapping each cur segment
+        for k, (px0, px1) in enumerate(open_span):
+            for j, (cx0, cx1) in enumerate(spans):
+                if px0 <= cx1 and cx0 <= px1:
+                    prev_hits[k].append(j)
+                    cur_hits[j].append(k)
+
+        next_cells: list[list[LineString]] = []
+        next_span: list[tuple[float, float]] = []
+        carried = set()
+        for k, cell in enumerate(open_cells):
+            hits = prev_hits[k]
+            if len(hits) == 1 and len(cur_hits[hits[0]]) == 1:  # plain continuation
+                j = hits[0]
+                cell.append(row[j])
+                next_cells.append(cell)
+                next_span.append(spans[j])
+                carried.add(j)
+            else:  # split, merge, or dead end
+                finished.append(cell)
+
+        for j, seg in enumerate(row):  # in-events, split children, merge results
+            if j not in carried:
+                next_cells.append([seg])
+                next_span.append(spans[j])
+
+        open_cells, open_span = next_cells, next_span
+
+    finished.extend(open_cells)
+    return finished
 
 
 def route_transits(lines, polygon, restricted) -> list[LineString]:

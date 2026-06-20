@@ -1,7 +1,9 @@
+import dataclasses
+
 from .planner_types import MissionParams, FlightPlan, FlightLine, Waypoint
 from .crs import pick_utm_epsg, to_projected, to_wgs84
-from .geometry import route_transits # rally bad with holes
-# from .routing import route_transits # work in progress
+from .geometry import best_azimuth#, route_transits # rally bad with holes
+from .routing import route_transits # work in progress
 from .metrics import validate, swath_width, line_spacing, compute_metrics
 from .missions import get_mission_function
 
@@ -15,6 +17,9 @@ def plan_mission(polygon_wgs84, params: MissionParams) -> FlightPlan:
     polygon_proj = to_projected(polygon_wgs84, epsg)
 
     spacing = line_spacing(swath_width(params.altitude, params.fov), params.overlap)
+    if params.flight_azimuth is None:
+        params = dataclasses.replace(
+            params, flight_azimuth=best_azimuth(polygon_proj, spacing, params.lead_in))
     strategy = get_mission_function(params.mission_type)
     lines_proj = strategy(polygon_proj, params, spacing)
     if not lines_proj:

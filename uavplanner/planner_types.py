@@ -7,7 +7,7 @@ class MissionParams:
     altitude: float         # m
     velocity: float         # m/s
     fov: float              # ° full angle, converted to rad in metrics
-    flight_azimuth: float   # ° clockwise from north
+    flight_azimuth: float | None    # ° clockwise from north, None -> pick automatically
     overlap: float          # fraction 0..1
     lead_in: float          # m
     epsg: int | None = None # None -> pick UTM zone automatically
@@ -38,6 +38,7 @@ class Metrics:
     swath: float
     line_spacing: float
     num_lines: int
+    azimuth: float
 
     point_density: float | None
     total_length: float
