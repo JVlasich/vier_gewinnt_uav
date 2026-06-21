@@ -17,14 +17,18 @@ U can chose a variety of parameters, some of them optinal others required.
 ## Structure
 ```
 uavplanner/
+├── __init__.py
+├── __main__.py
 ├── cli.py
-├── planner.py
-├── planner_types.py
-├── geometry.py
-├── missions.py
-├── metrics.py
 ├── crs.py
-├── reader.py
+├── geometry.py
+├── metrics.py
+├── missions.py
+├── planner_types.py
+├── planner.py
+├──reader.py
+├── routing.py
+├── test.py
 └── writer.py
 ```
 ## tets
