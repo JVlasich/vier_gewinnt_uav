@@ -7,13 +7,14 @@ The tool should take an area-of-interest polygon and basic flight mission parame
 The tool should be available as a  python module including an argument parser for execution from a command shell.  
 In addition, implementation as a a simple QGIS plugin is desired.
 ## Features
-1) Input: an AOI polygon, given as a GeoJSON file (.geojson/.json).
-2) Planning: the polygon is projected into a local metric coordinate system (UTM, auto-detected from the AOI's location unless an EPSG code is given) and flight lines are generated according to the chosen mission type:
-  single_grid – a back-and-forth raster across the AOI.
-  double_grid – two rasters at 90° to each other for denser coverage.
-  corridor – follows the centerline of a long, narrow AOI (road, river, ...) instead of a straight raster, the flight tracks bends in the corridor supports multiple parallel lines if the corridor is wider than one sensor swath.
-3) Metrics: swath width, line spacing, number of lines, estimated point density, total flight length and flight duration are computed and printed to the console.
-4) Output: the flight plan is exported as a KML file containing numbered waypoint placemarks and the full flight path as a line.
+
+1. **Input**: an AOI polygon, given as a GeoJSON file (`.geojson`/`.json`).
+2. **Planning**: the polygon is projected into a local metric coordinate system (UTM, auto-detected from the AOI's location unless an EPSG code is given), and flight lines are generated according to the chosen mission type:
+   - **`single_grid`** : a back and forth raster across the AOI.
+   - **`double_grid`** : two rasters orthogonal to each other for denser coverage.
+   - **`corridor`** : follows the centerline of a long, narrow AOI (road, river, ...) instead of a straight raster, the flight tracks bends in the corridor and supports multiple parallel lines if the corridor is wider than one sensor swath.
+3. **Metrics**: swath width, line spacing, number of lines, estimated point density, total flight length, and flight duration are computed and printed to the console.
+4. **Output**: the flight plan is exported as a KML file containing numbered waypoint placemarks and the full flight path as a line.
 ## Installation
 Requires Python 3.10+
 ## Usage
@@ -54,3 +55,4 @@ Bilder
 Longitude and Latitude made us sad:(  
 Without Dijkstra-Algorithm the drone flies mad. 
 ## Test
+
