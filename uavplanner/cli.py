@@ -24,7 +24,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--azimuth", type=_azimuth, default=None, help="main flight direction [deg clockwise from north], or 'auto' (default) to pick the shortest",)
     p.add_argument("--overlap", type=float, default=0.3, help="swath overlap, fraction 0..1")
     p.add_argument("--lead-in", type=float, default=0.0, help="line extension on both ends [m]")
-    p.add_argument("--mission", default="single_grid", choices=["single_grid", "double_grid"], help="mission type",)
+    p.add_argument("--mission", default="single_grid", choices=["single_grid", "double_grid", "corridor"], help="mission type",)
     p.add_argument("--prf", type=float, default=None, help="pulse repetition frequency [Hz], enables point density estimate",)
     p.add_argument("--epsg", type=int, default=None, help="projected EPSG code (default: auto UTM zone)",)
     p.add_argument("--restricted", action="store_true", help="keep transits inside the AOI (no-fly outside)")
