@@ -17,38 +17,40 @@ In addition, implementation as a a simple QGIS plugin is desired.
 ## Installation
 Requires Python 3.10+
 ## Usage
-input: (positional)AOI polygon file (.geojson/.json)  
--o/--output: Output KML path (default: mission.kml)  
---altitude: Flying altitude in meters (required)  
---velocity: Flight speed in m/s (required)  
---fovScanner: field of view, full angle in degrees (required)  
---azimuth: Main flight direction in degrees clockwise from north or auto (default) to pick the shortest path automatically  
---overlap: Swath overlap as a fraction 0–1 (default: 0.3)  
---lead-in: Line extension on both ends in meters, for sensor warm-up (default: 0)  
---mission: Mission type: single_grid, double_grid, or corridor (default: single_grid)  
---prfPulse repetition frequency in Hz, if given, enables a point density estimate  
---epsg: Projected EPSG code to use (default: automatically picked UTM zone)  
---restricted: Keep transit paths between flight lines inside the AOI (no flying outside the polygon) 
+| Option | Description |
+|---|---|
+| `input` (positional) | AOI polygon file (`.geojson`/`.json`) |
+| `-o`, `--output` | Output KML path (default: `mission.kml`) |
+| `--altitude` | Flying altitude in meters (required) |
+| `--velocity` | Flight speed in m/s (required) |
+| `--fov` | Scanner field of view, full angle in degrees (required) |
+| `--azimuth` | Main flight direction in degrees clockwise from north, or `auto` (default) to pick the shortest path automatically |
+| `--overlap` | Swath overlap as a fraction 0–1 (default: `0.3`) |
+| `--lead-in` | Line extension on both ends in meters, for sensor warm-up (default: `0`) |
+| `--mission` | Mission type: `single_grid`, `double_grid`, or `corridor` (default: `single_grid`) |
+| `--prf` | Pulse repetition frequency in Hz, enables a point density estimate |
+| `--epsg` | Projected EPSG code to use (default: automatically picked UTM zone) |
+| `--restricted` | Keep transit paths between flight lines inside the AOI (no flying outside the polygon) |
 ## Structure
 ```
 uavplanner/
-├── __init__.py : Marks uavplanner as a Python package
-├── __main__.py :  Imports and calls cli.main()
-├── cli.py : Command-line argument parsing and console output
-├── crs.py : Coordinate reference system handling (WGS84, projected UTM)
-├── geometry.py : Core raster flight-line generation, automatic azimuth optimization, transit routing
-├── metrics.py : Swath width, line spacing, point density, and parameter validation
-├── missions.py : Mission type registry
-├── planner_types.py : Data structures(MissionParams, Waypoint, FlightLine, Metrics, FlightPlan)
-├── planner.py : Responsible for (validate, project, generate lines, route transits, compute metrics, export)
-├── reader.py : AOI file readers (GeoJSON, plain-text coordinate lists)
-├── routing.py : Handles AOIs with holes (JULES FRAGEN)
-├── test.py : Testenviroment
-└── writer.py : KML export
+├── __init__.py        Marks uavplanner as a Python package
+├── __main__.py        Imports and calls cli.main()
+├── cli.py             Command-line argument parsing and console output
+├── crs.py             Coordinate reference system handling (WGS84, projected UTM)
+├── geometry.py        Core raster flight-line generation, automatic azimuth optimization, transit routing
+├── metrics.py         Swath width, line spacing, point density, and parameter validation
+├── missions.py        Mission type registry
+├── planner_types.py   Data structures(MissionParams, Waypoint, FlightLine, Metrics, FlightPlan)
+├── planner.py         Responsible for (validate, project, generate lines, route transits, compute metrics, export)
+├── reader.py          AOI file readers (GeoJSON, plain-text coordinate lists)
+├── routing.py         Handles AOIs with holes (JULES FRAGEN)
+├── test.py            Test enviroment
+└── writer.py          KML export
 ```
 ## Examples
 Bilder
 ## Trivia
-Longitude and Latitude made us sad:(
+Longitude and Latitude made us sad:(  
 Without Dijkstra-Algorithm the drone flies mad. 
 ## Test
