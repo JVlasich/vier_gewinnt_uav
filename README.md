@@ -1,27 +1,29 @@
-# Ich mach morgen weiter, mein Kopf tut weh, ich hab vergessen in der Uni zu speichern :(((((((((((
 # UAV-LiDAR flight planning tool
 A project written for the course Python-Programmierung für Geowissenschaften [120.113] @ TU Wien  
 ## Aim of the Project
 The task  was to implement a simple tool to create flight plans for UAV-LiDAR surveys.  
-The tool should take an area-of-interest polygon and basic flight mission parameters (flying altitude. flight speed, scanner FOV, scan rate, main flight direction, mission type...) as input and should return a waypoint kml file (readable for DJI pilot app) as output.  
-The tool should be available as a  python module including an argument parser for execution from a command shell.  
-In addition, implementation as a a simple QGIS plugin is desired.
+The tool takes an area-of-interest polygon and basic flight mission parameters as input and returns a waypoint kml file as output.  
+The tool is available as an importable module aswell as support for calls from the commandline and a QGIS processing script
 ## Features
-
-1. **Input**: an AOI polygon, given as a GeoJSON file (`.geojson`/`.json`).
-2. **Planning**: the polygon is projected into a local metric coordinate system (UTM, auto-detected from the AOI's location unless an EPSG code is given), and flight lines are generated according to the chosen mission type:
+- **Input**: an AOI polygon, given as a GeoJSON file (`.geojson`/`.json`) or Plaintext (lon;lat\n).
+- **Planning**: the polygon is projected into a local metric coordinate system (UTM, auto-detected from the AOI's location unless an EPSG code is given), and flight lines are generated according to the chosen mission type:
    - **`single_grid`** : a back and forth raster across the AOI.
    - **`double_grid`** : two rasters orthogonal to each other for denser coverage.
-   - **`corridor`** : follows the centerline of a long, narrow AOI (road, river, ...) instead of a straight raster, the flight tracks bends in the corridor and supports multiple parallel lines if the corridor is wider than one sensor swath.
-3. **Metrics**: swath width, line spacing, number of lines, estimated point density, total flight length, and flight duration are computed and printed to the console.
-4. **Output**: the flight plan is exported as a KML file containing numbered waypoint placemarks and the full flight path as a line.
+   - **`corridor`** : follows the centerline of a long, narrow AOI (road, river, ...) instead of a straight raster, the flight tracks bends in the corridor and supports multiple parallel lines if the corridor is wider than one sensor swath (work in progress).
+- **Metrics**: swath width, line spacing, number of lines, estimated point density, total flight length, and flight duration are computed and printed to the console.
+- **Output**: the flight plan is exported as a KML file containing numbered waypoint placemarks and the full flight path as a line.
 ## Installation
 ### As Module
-Clone the repository and run `python -m pip -e [path to the repo]` using the python environment you'd like to install the Module in.
+Clone the repository and run `python -m pip -e [path to the repo]` using the python environment you'd like to install the Module in. Alternatively drop the ./uavplanner/ Folder into the desired environments site-package directory and install the required dependecies manually:
+- shapely
+- simplekml
+- pyproj
 ### As QGIS-processing-script
-Follow the same step as for the Module-only-installation using python inside the OSGeo4W-Shell's python (comes with qgis). Write access to the qgis installation is required which in most cases entails admin priviliges.
+Inside QGIS open the Python Console and type `!python -m pip -e [path to the repo]`.
 After this add the `plan_flight_lines.py` file to the QGIS toolbox. 
 ## Usage
+### Command Line
+`python -m uavplanner [input] [options]`
 | Option | Description |
 |---|---|
 | `input` (positional) | AOI polygon file (`.geojson`/`.json`/`.txt`) |
@@ -36,6 +38,12 @@ After this add the `plan_flight_lines.py` file to the QGIS toolbox.
 | `--prf` | Pulse repetition frequency in Hz, enables a point density estimate |
 | `--epsg` | Projected EPSG code to use (default: automatically picked UTM zone) |
 | `--restricted` | Keep transit paths between flight lines inside the AOI (no flying outside the polygon) |
+### QGIS
+1) Create a new shapefile layer with type Polygon
+2) Draw a Polygon
+3) Click on the script in the toolbox, input arguments and run
+4) The result is saved as a kml file and reloaded onto the map
+
 ## Structure
 ```
 uavplanner/
@@ -50,7 +58,6 @@ uavplanner/
 ├── planner.py         Responsible for (validate, project, generate lines, route transits, compute metrics, export)
 ├── reader.py          AOI file readers (GeoJSON, plain-text coordinate lists)
 ├── routing.py         Handles AOIs with holes (JULES FRAGEN)
-├── test.py            Test enviroment
 └── writer.py          KML export
 ```
 ## Examples
