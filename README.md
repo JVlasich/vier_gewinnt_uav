@@ -20,7 +20,7 @@ Requires Python 3.10+
 ## Usage
 | Option | Description |
 |---|---|
-| `input` (positional) | AOI polygon file (`.geojson`/`.json`) |
+| `input` (positional) | AOI polygon file (`.geojson`/`.json`/`.txt`) |
 | `-o`, `--output` | Output KML path (default: `mission.kml`) |
 | `--altitude` | Flying altitude in meters (required) |
 | `--velocity` | Flight speed in m/s (required) |
