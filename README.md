@@ -19,7 +19,7 @@ Clone the repository and run `python -m pip -e [path to the repo]` using the pyt
 - simplekml
 - pyproj
 ### As QGIS-processing-script
-Inside QGIS open the Python Console and type `!python -m pip -e [path to the repo]`.
+Inside QGIS open the Python Console and type `import pip; pip.main(['install', '-e', r'[path-to-repo]'])`.
 After this add the `plan_flight_lines.py` file to the QGIS toolbox. 
 ## Usage
 ### Command Line
@@ -57,11 +57,24 @@ uavplanner/
 ├── planner_types.py   Data structures(MissionParams, Waypoint, FlightLine, Metrics, FlightPlan)
 ├── planner.py         Responsible for (validate, project, generate lines, route transits, compute metrics, export)
 ├── reader.py          AOI file readers (GeoJSON, plain-text coordinate lists)
-├── routing.py         Handles AOIs with holes (JULES FRAGEN)
+├── routing.py         Handles AOIs with holes (work in progress)
 └── writer.py          KML export
 ```
 ## Examples
-Bilder
+```
+python -m uavplanner .\sample_aoi\pielach.geojson -o pielach.kml --altitude 70 --velocity 15 --fov 70
+
+OUTPUT:
+mission type:         single_grid
+flight azimuth:       70 deg (auto)
+projected CRS:        EPSG:32633
+swath width:          98.0 m
+line spacing:         68.6 m
+flight lines:         14
+total length:         6882 m
+est. duration:        7.6 min
+```
+![AOI over the Pielach Region](./graphics/pielach.png)
 ## Trivia
 Longitude and Latitude made us sad:(  
 Without Dijkstra-Algorithm the drone flies mad. 

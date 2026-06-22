@@ -2,7 +2,7 @@
 from shapely.affinity import rotate
 from shapely.geometry import LineString, Point, Polygon
 from shapely.ops import substring
-from .routing import route_transits
+#from .routing import route_transits
 
 
 def generate_flight_lines(
@@ -136,23 +136,23 @@ def _build_cells(rows) -> list[list[LineString]]:
     return finished
 
 
-# def route_transits(lines, polygon, restricted) -> list[LineString]:
-#     """One transit leg per consecutive line pair, in the projected CRS.
-#     Straight hop unless restricted and the hop leaves the polygon,
-#     then walk along the boundary instead."""
-#     safe = polygon.buffer(0.5)
-#     ring = polygon.exterior
-#     transits = []
-#     for prev, nxt in zip(lines, lines[1:]):
-#         hop = LineString([prev.coords[-1], nxt.coords[0]])
-#         if restricted and not hop.covered_by(safe):
-#             hop = _boundary_path(ring, hop.coords[0], hop.coords[-1])
-#             if not hop.covered_by(safe):
-#                 raise ValueError(
-#                     "restricted transit still leaves the AOI; the boundary "
-#                     "walk cannot route around holes")
-#         transits.append(hop)
-#     return transits
+def route_transits(lines, polygon, restricted) -> list[LineString]:
+    """One transit leg per consecutive line pair, in the projected CRS.
+    Straight hop unless restricted and the hop leaves the polygon,
+    then walk along the boundary instead."""
+    safe = polygon.buffer(0.5)
+    ring = polygon.exterior
+    transits = []
+    for prev, nxt in zip(lines, lines[1:]):
+        hop = LineString([prev.coords[-1], nxt.coords[0]])
+        if restricted and not hop.covered_by(safe):
+            hop = _boundary_path(ring, hop.coords[0], hop.coords[-1])
+            if not hop.covered_by(safe):
+                raise ValueError(
+                    "restricted transit still leaves the AOI; the boundary "
+                    "walk cannot route around holes")
+        transits.append(hop)
+    return transits
 
 
 def _boundary_path(ring, p0, p1) -> LineString:
