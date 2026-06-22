@@ -46,6 +46,9 @@ def corridor(polygon_proj, params, spacing_m) -> list[LineString]:
     centerline = _centerline(polygon_proj)
     if centerline is None or centerline.length == 0:
         raise ValueError("corridor: could not derive a centerline from this AOI")
+    if centerline.intersection(polygon_proj).length < 0.99 * centerline.length:
+        raise ValueError("corridor: derived centerline leaves the AOI; this AOI "
+                         "is not a simple corridor (try single_grid/double_grid)")
 
     n_lines = max(1, round((polygon_proj.area / centerline.length) / spacing_m))
     if n_lines == 1:
@@ -61,12 +64,15 @@ def corridor(polygon_proj, params, spacing_m) -> list[LineString]:
     # unrelated pieces of different offsets
     rows: list[list[LineString]] = []
     for off in offsets:
-        track = centerline if off == 0.0 else centerline.offset_curve(off)
+        # mitre means sharp
+        track = centerline if off == 0.0 else centerline.offset_curve(off, join_style="mitre")
         if track.is_empty:
             continue
         clipped = track.intersection(polygon_proj)
         parts = getattr(clipped, "geoms", [clipped])
-        pieces = [p for p in parts if p.geom_type == "LineString" and p.length > 0]
+        # drop near-collinear vertices 1m tolerance
+        pieces = [p.simplify(1.0) for p in parts
+                  if p.geom_type == "LineString" and p.length > 0]
         if not pieces:
             continue
         # a split offset can produce pieces in arbitrary order; sort
@@ -114,16 +120,23 @@ def _centerline(polygon_proj) -> LineString | None:
     if n < 4:
         return None
 
-    edges = []
-    for i in range(n):
+    # corridor direction: the longer axis of the minimum rotated rectangle
+    rect = list(polygon_proj.minimum_rotated_rectangle.exterior.coords)
+    _, p, q = max((math.dist(rect[i], rect[i + 1]), rect[i], rect[i + 1])
+                  for i in range(4))
+    ux, uy = q[0] - p[0], q[1] - p[1]
+    norm = math.hypot(ux, uy) or 1.0
+    ux, uy = ux / norm, uy / norm
+
+    # the two caps are the edges whose midpoints sit at the extreme ends of that axis
+    def axis_pos(i):
         j = (i + 1) % n
-        edges.append((math.dist(coords[i], coords[j]), i, j))
-    edges.sort(key=lambda e: e[0])
-    _, a0, a1 = edges[0]
-    second = next((e for e in edges[1:] if a0 not in e[1:] and a1 not in e[1:]), None)
-    if second is None:
-        return None
-    _, b0, b1 = second
+        mx, my = (coords[i][0] + coords[j][0]) / 2, (coords[i][1] + coords[j][1]) / 2
+        return mx * ux + my * uy
+    a = min(range(n), key=axis_pos)
+    b = max(range(n), key=axis_pos)
+    a0, a1 = a, (a + 1) % n
+    b0, b1 = b, (b + 1) % n
 
     # split the ring into two arcs at the midpoints of these end edges
     arc_a = coords[a1:b0 + 1] if a1 <= b0 else coords[a1:] + coords[:b0 + 1]

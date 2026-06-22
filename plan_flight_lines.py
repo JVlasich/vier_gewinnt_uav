@@ -64,7 +64,7 @@ class PlanFlightLines(QgsProcessingAlgorithm):
     RESTRICTED = "RESTRICTED"
     OUTPUT = "OUTPUT"
 
-    MISSION_TYPES = ["single_grid", "double_grid"]
+    MISSION_TYPES = ["single_grid", "double_grid", "corridor"]
 
     # --- inputs --------------------------------------------------------------
     def initAlgorithm(self, config=None):

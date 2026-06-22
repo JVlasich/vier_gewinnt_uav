@@ -2,8 +2,8 @@ import dataclasses
 
 from .planner_types import MissionParams, FlightPlan, FlightLine, Waypoint
 from .crs import pick_utm_epsg, to_projected, to_wgs84
-from .geometry import best_azimuth#, route_transits # rally bad with holes
-from .routing import route_transits # work in progress
+from .geometry import best_azimuth, route_transits # rally bad with holes
+#from .routing import route_transits # work in progress
 from .metrics import validate, swath_width, line_spacing, compute_metrics
 from .missions import get_mission_function
 

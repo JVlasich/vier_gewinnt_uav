@@ -16,7 +16,11 @@ In addition, implementation as a a simple QGIS plugin is desired.
 3. **Metrics**: swath width, line spacing, number of lines, estimated point density, total flight length, and flight duration are computed and printed to the console.
 4. **Output**: the flight plan is exported as a KML file containing numbered waypoint placemarks and the full flight path as a line.
 ## Installation
-Requires Python 3.10+
+### As Module
+Clone the repository and run `python -m pip -e [path to the repo]` using the python environment you'd like to install the Module in.
+### As QGIS-processing-script
+Follow the same step as for the Module-only-installation using python inside the OSGeo4W-Shell's python (comes with qgis). Write access to the qgis installation is required which in most cases entails admin priviliges.
+After this add the `plan_flight_lines.py` file to the QGIS toolbox. 
 ## Usage
 | Option | Description |
 |---|---|
@@ -55,4 +59,3 @@ Bilder
 Longitude and Latitude made us sad:(  
 Without Dijkstra-Algorithm the drone flies mad. 
 ## Test
-

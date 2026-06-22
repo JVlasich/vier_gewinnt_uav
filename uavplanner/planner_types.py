@@ -59,5 +59,11 @@ class FlightPlan:
             out.append(line.start)
             out.append(line.end)
             out.extend(line.transit_to_next)
-        return out
-
+        # corridor makes many lines where end of one == start of next,
+        # drop consecutive waypoints sitting at the same location
+        deduped = []
+        for wp in out:
+            if deduped and deduped[-1].lon == wp.lon and deduped[-1].lat == wp.lat:
+                continue
+            deduped.append(wp)
+        return deduped
